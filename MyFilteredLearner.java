@@ -100,7 +100,7 @@ public class MyFilteredLearner {
 			filter.setAttributeIndices("last");
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
-			classifier.setClassifier(new NaiveBayes());
+			classifier.setClassifier(new RandomForest());
 			classifier.buildClassifier(trainData);
 			// Uncomment to see the classifier
 			// System.out.println(classifier);
