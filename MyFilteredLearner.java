@@ -105,8 +105,8 @@ public class MyFilteredLearner {
 			// System.out.println(testData);
 			Evaluation eval = new Evaluation(trainData);
 			// eval.crossValidateModel(classifier, trainData, 4, new Random(1));
-      eval.evaluateModel(classifier, trainData);
-			System.out.println(eval.toSummaryString());
+      eval.evaluateModel(classifier, testData);
+			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
 			System.out.println(eval.toClassDetailsString());
 			System.out.println("===== Evaluating on filtered (training) dataset done =====");
 		}
