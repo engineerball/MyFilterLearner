@@ -94,22 +94,25 @@ public class MyFilteredLearner {
 	public void evaluate() {
 		try {
 			trainData.setClassIndex(0);
+			testData.setClassIndex(0);
 			// trainData.setClassIndex(trainData.numAttributes() - 1);
 			filter = new StringToWordVector();
 			filter.setAttributeIndices("last");
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
 			classifier.setClassifier(new RandomForest());
-			// System.out.println(trainData);
+      classifier.buildClassifier(trainData);
+			// System.out.println(testData);
 			Evaluation eval = new Evaluation(trainData);
 			// eval.crossValidateModel(classifier, trainData, 4, new Random(1));
-      eval.evaluateModel(classifier, testData);
+      eval.evaluateModel(classifier, trainData);
 			System.out.println(eval.toSummaryString());
 			System.out.println(eval.toClassDetailsString());
 			System.out.println("===== Evaluating on filtered (training) dataset done =====");
 		}
 		catch (Exception e) {
 			System.out.println("Problem found when evaluating");
+			System.out.println(e);
 		}
 	}
 
