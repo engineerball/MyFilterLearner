@@ -38,6 +38,10 @@ public class MyFilteredLearner {
 	 */
 	Instances trainData;
 	/**
+	 * Object that stores test data.
+	 */
+	Instances testData;
+	/**
 	 * Object that stores the filter
 	 */
 	StringToWordVector filter;
@@ -65,6 +69,24 @@ public class MyFilteredLearner {
 	}
 
 	/**
+	 * This method loads a dataset in ARFF format. If the file does not exist, or
+	 * it has a wrong format, the attribute trainData is null.
+	 * @param fileName The name of the file that stores the dataset.
+	 */
+	public void loadTestDataset(String fileName) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			ArffReader arff = new ArffReader(reader);
+			testData = arff.getData();
+			System.out.println("===== Loaded dataset: " + fileName + " =====");
+			reader.close();
+		}
+		catch (IOException e) {
+			System.out.println("Problem found when reading: " + fileName);
+		}
+	}
+
+	/**
 	 * This method evaluates the classifier. As recommended by WEKA documentation,
 	 * the classifier is defined but not trained yet. Evaluation of previously
 	 * trained classifiers can lead to unexpected results.
@@ -80,7 +102,8 @@ public class MyFilteredLearner {
 			classifier.setClassifier(new RandomForest());
 			// System.out.println(trainData);
 			Evaluation eval = new Evaluation(trainData);
-			eval.crossValidateModel(classifier, trainData, 4, new Random(1));
+			// eval.crossValidateModel(classifier, trainData, 4, new Random(1));
+      eval.evaluateModel(classifier, testData);
 			System.out.println(eval.toSummaryString());
 			System.out.println(eval.toClassDetailsString());
 			System.out.println("===== Evaluating on filtered (training) dataset done =====");
@@ -136,15 +159,16 @@ public class MyFilteredLearner {
 
 		MyFilteredLearner learner;
 		if (args.length < 2)
-			System.out.println("Usage: java MyLearner <fileData> <fileModel>");
+			System.out.println("Usage: java MyLearner <fileTrainData> <fileTest> <fileModel>");
 		else {
 			learner = new MyFilteredLearner();
 			learner.loadDataset(args[0]);
+			learner.loadTestDataset(args[1]);
 			// Evaluation mus be done before training
 			// More info in: http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
 			learner.evaluate();
 			learner.learn();
-			learner.saveModel(args[1]);
+			learner.saveModel(args[2]);
 		}
 	}
 }
