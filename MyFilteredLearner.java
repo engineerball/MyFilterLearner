@@ -24,6 +24,7 @@ import weka.core.converters.ArffLoader.ArffReader;
 import weka.core.converters.ConverterUtils.DataSource;
 import java.io.*;
 
+
 /**
  * This class implements a simple text learner in Java using WEKA.
  * It loads a text dataset written in ARFF format, evaluates a classifier on it,
@@ -86,6 +87,28 @@ public class MyFilteredLearner {
 		}
 	}
 
+	
+	public void loadCSVData(String fileName) {
+		String line = "";
+        String cvsSplitBy = ",";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+
+            while ((line = br.readLine()) != null) {
+
+                // use comma as separator
+                String[] data = line.split(cvsSplitBy);
+
+                System.out.println("Data [code= " + data[0] + " , name=" + data[1] + " , BC=" + data[2] + " , CC=" + data[3] + " , DC=" + data[4] + "]");
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+	}
+	
 	/**
 	 * This method evaluates the classifier. As recommended by WEKA documentation,
 	 * the classifier is defined but not trained yet. Evaluation of previously
@@ -93,11 +116,11 @@ public class MyFilteredLearner {
 	 */
 	public void evaluate() {
 		try {
-			trainData.setClassIndex(0);
-			testData.setClassIndex(0);
+			trainData.setClassIndex(trainData.numAttributes() - 1);
+			testData.setClassIndex(testData.numAttributes() - 1);
 			// trainData.setClassIndex(trainData.numAttributes() - 1);
 			filter = new StringToWordVector();
-			filter.setAttributeIndices("last");
+			filter.setAttributeIndices("first");
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
 			classifier.setClassifier(new RandomForest());
@@ -172,9 +195,9 @@ public class MyFilteredLearner {
 	 */
 	public void learn() {
 		try {
-			trainData.setClassIndex(0);
+			trainData.setClassIndex(1);
 			filter = new StringToWordVector();
-			filter.setAttributeIndices("last");
+			filter.setAttributeIndices("first");
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
 			classifier.setClassifier(new RandomForest());
@@ -218,6 +241,8 @@ public class MyFilteredLearner {
 			learner = new MyFilteredLearner();
 			learner.loadDataset(args[0]);
 			learner.loadTestDataset(args[1]);
+			
+			learner.loadCSVData("imdb_norm.csv");
 			// Evaluation mus be done before training
 			// More info in: http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
 			learner.evaluate();

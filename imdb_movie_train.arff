@@ -1,0 +1,10 @@
+@relation imdb_movie_train1
+
+@attribute text string
+@attribute class-att {0,1}
+
+@data
+
+'Vivian Schilling did an excellent job with the script.',1
+'Waste your money on this game.',0
+'Wasted two hours.',0
