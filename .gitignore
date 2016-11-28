@@ -1,2 +1,4 @@
 *.class
+.metadata**
+.classpath
 test.model
