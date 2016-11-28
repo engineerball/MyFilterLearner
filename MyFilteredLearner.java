@@ -243,7 +243,7 @@ public class MyFilteredLearner {
 			learner.loadTestDataset(args[1]);
 			
 			learner.loadCSVData("imdb_norm.csv");
-			// Evaluation mus be done before training
+			// Evaluation must be done before training
 			// More info in: http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
 			learner.evaluate();
 			learner.learn();

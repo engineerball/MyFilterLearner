@@ -13,5 +13,5 @@ javac -cp /opt/weka/weka.jar MyFilteredLearner.java
 
 ##### How to run
 ```
-java  -cp /opt/weka/weka.jar:. MyFilteredLearner imdbtrain.arff test.model
+java  -cp /opt/weka/weka.jar:. MyFilteredLearner  imdb_movie_train.arff imdb_movie_test.arff test.mode
 ```
