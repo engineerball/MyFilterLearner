@@ -23,7 +23,15 @@ import weka.classifiers.meta.FilteredClassifier;
 import weka.core.converters.ArffLoader.ArffReader;
 import weka.core.converters.ConverterUtils.DataSource;
 import java.io.*;
-
+import org.apache.commons.lang3.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 /**
  * This class implements a simple text learner in Java using WEKA.
@@ -50,6 +58,24 @@ public class MyFilteredLearner {
 	 * Object that stores the classifier
 	 */
 	FilteredClassifier classifier;
+	
+	
+	HashMap<String, Double> positiveBC = new HashMap<String, Double>();
+	HashMap<String, Double> positiveDC = new HashMap<String, Double>();
+	HashMap<String, Double> positiveCC = new HashMap<String, Double>();
+	HashMap<String, Double> negativeBC = new HashMap<String, Double>();
+	HashMap<String, Double> negativeDC = new HashMap<String, Double>();
+	HashMap<String, Double> negativeCC = new HashMap<String, Double>();
+	
+	Map<Integer, List<String>> positiveFoundWord = new HashMap<Integer, List<String>>();
+	HashMap<Integer, Double> positiveFoundWordBC = new HashMap<Integer, Double>();
+	HashMap<Integer, Double> positiveFoundWordDC = new HashMap<Integer, Double>();
+	HashMap<Integer, Double> positiveFoundWordCC = new HashMap<Integer, Double>();
+	Map<Integer, List<String>> negativeFoundWord = new HashMap<Integer, List<String>>();
+	HashMap<Integer, Double> negativeFoundWordBC = new HashMap<Integer, Double>();
+	HashMap<Integer, Double> negativeFoundWordDC = new HashMap<Integer, Double>();
+	HashMap<Integer, Double> negativeFoundWordCC = new HashMap<Integer, Double>();
+	
 
 	/**
 	 * This method loads a dataset in ARFF format. If the file does not exist, or
@@ -68,6 +94,7 @@ public class MyFilteredLearner {
 			System.out.println("Problem found when reading: " + fileName);
 		}
 	}
+
 
 	/**
 	 * This method loads a dataset in ARFF format. If the file does not exist, or
@@ -88,7 +115,7 @@ public class MyFilteredLearner {
 	}
 
 	
-	public void loadCSVData(String fileName) {
+	public void loadPositiveCSVData(String fileName) {
 		String line = "";
         String cvsSplitBy = ",";
 
@@ -99,14 +126,146 @@ public class MyFilteredLearner {
                 // use comma as separator
                 String[] data = line.split(cvsSplitBy);
 
-                System.out.println("Data [code= " + data[0] + " , name=" + data[1] + " , BC=" + data[2] + " , CC=" + data[3] + " , DC=" + data[4] + "]");
+//                System.out.println("Data [code= " + data[0] + " , name=" + data[1] + " , BC=" + data[2] + " , CC=" + data[3] + " , DC=" + data[4] + "]");
 
+                positiveBC.put(data[1].toString(), Double.parseDouble(data[2]));
+                positiveCC.put(data[1].toString(), Double.parseDouble(data[3]));
+                positiveDC.put(data[1].toString(), Double.parseDouble(data[4]));
+                
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 		
+	}
+
+	public void loadNegativeCSVData(String fileName) {
+		String line = "";
+        String cvsSplitBy = ",";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+
+            while ((line = br.readLine()) != null) {
+
+                // use comma as separator
+                String[] data = line.split(cvsSplitBy);
+
+//                System.out.println("Data [code= " + data[0] + " , name=" + data[1] + " , BC=" + data[2] + " , CC=" + data[3] + " , DC=" + data[4] + "]");
+
+                negativeBC.put(data[1].toString(), Double.parseDouble(data[2]));
+                negativeCC.put(data[1].toString(), Double.parseDouble(data[3]));
+                negativeDC.put(data[1].toString(), Double.parseDouble(data[4]));
+               
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+	}
+
+	public String searchString(String classString, String word) {
+		String[] s1 = classString.split("[ .,;]+");
+		String foundword = "";
+		for (String s : s1){
+			if (word.equalsIgnoreCase(s)) {				
+				foundword = word;
+//				System.out.println("Found :" + foundword);
+			} 			
+		}
+		return foundword;
+	}
+	
+	
+	public Double sumCentrality(List words, HashMap<String, Double> centralityMap) {
+		Double sum = 0.0;
+		for ( int i = 0 ; i < words.size(); i++){
+			sum += centralityMap.get(words.get(i)); 
+		}		
+		return sum;
+	}
+	
+	public void writePosCentralityToCSV(HashMap<Integer, Double> BCMap,HashMap<Integer, Double> CCMap,HashMap<Integer, Double> DCMap) {
+		PrintWriter pw = null;
+		try {
+		    pw = new PrintWriter(new File("Pos_Centrality.csv"));
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "Id,BC,CC,DC";
+		builder.append(ColumnNamesList +"\n");
+		
+		for (int i = 0 ; i < BCMap.size(); i++){
+			builder.append(i + "," + BCMap.get(i) + "," + CCMap.get(i) + "," + DCMap.get(i));
+			builder.append('\n');
+
+		}
+		pw.write(builder.toString());		
+		pw.close();
+		System.out.println("done!");
+	}
+
+	public void writeNegCentralityToCSV(HashMap<Integer, Double> BCMap,HashMap<Integer, Double> CCMap,HashMap<Integer, Double> DCMap) {
+		PrintWriter pw = null;
+		try {
+		    pw = new PrintWriter(new File("Neg_Centrality.csv"));
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "Id,BC,CC,DC";
+		builder.append(ColumnNamesList +"\n");
+		
+		for (int i = 0 ; i < BCMap.size(); i++){
+			builder.append(i + "," + BCMap.get(i) + "," + CCMap.get(i) + "," + DCMap.get(i));
+			builder.append('\n');
+
+		}
+		pw.write(builder.toString());		
+		pw.close();
+		System.out.println("done!");
+	}
+
+	public void writePositiveFoundWordsToText(Map<Integer, List<String>> positiveFoundWord) {
+		String pathToFile = "positiveFoundWords.txt";
+		try {
+			FileWriter writer;
+			writer = new FileWriter(pathToFile, true);
+			for (int i = 0; i < positiveFoundWord.size(); i++) {
+//				writer.write(i);;
+//				writer.write(" : ");
+				writer.write(positiveFoundWord.get(i).toString());
+				writer.write("\r\n");
+			}
+			System.out.println("Done");
+			writer.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void writeNegativeFoundWordsToText(Map<Integer, List<String>> negativeFoundWord) {
+		String pathToFile = "negativeFoundWords.txt";
+		try {
+			FileWriter writer;
+			writer = new FileWriter(pathToFile, true);
+			for (int i = 0; i < negativeFoundWord.size(); i++) {
+//				writer.write(i);;
+//				writer.write(" : ");
+				writer.write(negativeFoundWord.get(i).toString());
+				writer.write("\r\n");
+			}
+			System.out.println("Done");
+			writer.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	/**
@@ -125,7 +284,89 @@ public class MyFilteredLearner {
 			classifier.setFilter(filter);
 			classifier.setClassifier(new RandomForest());
 			classifier.buildClassifier(trainData);
-			// System.out.println(testData);
+//			System.out.println(testData);
+			
+			String searchResult = "";
+			List<String> posFoundWords = new ArrayList<String>();
+			List<String> negFoundWords = new ArrayList<String>();
+			
+			Double posBC, posDC, posCC, negBC, negDC, negCC = 0.0;
+			
+			for ( int i = 0 ; i < testData.numInstances(); i++)
+			{
+
+//				positiveFoundWord.clear();
+				String stringClass = testData.instance(i).toString(testData.classIndex() - 1);
+//				System.out.println(stringClass);
+				posFoundWords.clear();
+				if (positiveFoundWord.get(i) == null) {
+			    	positiveFoundWord.put(i, new ArrayList<String>());
+					
+			    	Set posSet = positiveBC.entrySet();
+				    Iterator posIterator = posSet.iterator();
+				    while(posIterator.hasNext()) {
+				       Map.Entry mentry = (Map.Entry)posIterator.next();		
+				       searchResult = searchString(stringClass, mentry.getKey().toString());
+				       if (searchResult != ""){
+	//				       System.out.println("Search result is : " + searchResult);
+						   positiveFoundWord.get(i).add(searchResult);
+				    	   posFoundWords.add(searchResult);
+				       }
+				    }
+				}
+			    
+
+			    posBC = sumCentrality(posFoundWords, positiveBC);
+			    posDC = sumCentrality(posFoundWords, positiveDC);
+			    posCC = sumCentrality(posFoundWords, positiveCC);
+			    			    
+			    			    
+			    positiveFoundWordBC.put(i, posBC);
+			    positiveFoundWordDC.put(i, posDC);
+			    positiveFoundWordCC.put(i, posCC);
+			    
+			    /* Negative method */
+			    negFoundWords.clear();
+			    if (negativeFoundWord.get(i) == null) {
+			    	negativeFoundWord.put(i,  new ArrayList<String>());
+				    Set negSet = negativeBC.entrySet();
+				    Iterator negIterator = negSet.iterator();
+				    while(negIterator.hasNext()) {
+				       Map.Entry mentry = (Map.Entry)negIterator.next();		
+				       searchResult = searchString(stringClass, mentry.getKey().toString());
+				       if (searchResult != ""){
+				    	   negativeFoundWord.get(i).add(searchResult);
+				    	   negFoundWords.add(searchResult);
+				       }
+				    }
+			    }
+			    
+			    negBC = sumCentrality(negFoundWords, negativeBC);
+			    negDC = sumCentrality(negFoundWords, negativeDC);
+			    negCC = sumCentrality(negFoundWords, negativeCC);
+		    			    
+			    negativeFoundWordBC.put(i, negBC);
+			    negativeFoundWordDC.put(i, negDC);
+			    negativeFoundWordCC.put(i, negCC);
+			}
+			
+			
+//			System.out.println(positiveFoundWordBC);
+//			System.out.println(positiveFoundWordDC);
+//			System.out.println(positiveFoundWordCC);
+//			
+//			System.out.println(negativeFoundWordBC);
+//			System.out.println(negativeFoundWordBC);
+//			System.out.println(negativeFoundWordBC);
+			
+			System.out.println(positiveFoundWord);
+			writePositiveFoundWordsToText(positiveFoundWord);
+			writeNegativeFoundWordsToText(negativeFoundWord);
+			System.out.println(negativeFoundWord);
+			
+			writePosCentralityToCSV(positiveFoundWordBC, positiveFoundWordCC, positiveFoundWordDC);
+			writeNegCentralityToCSV(negativeFoundWordBC, negativeFoundWordCC, negativeFoundWordDC);
+			
 			// String options[] = {"-v"};
 			Evaluation eval = new Evaluation(trainData);
 			// eval.crossValidateModel(classifier, trainData, 4, new Random(1));
@@ -153,8 +394,7 @@ public class MyFilteredLearner {
 		            classifier.distributionForInstance(testData.instance(i)); 
 
 		        // Print out the true label, predicted label, and the distribution.
-		        System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", 
-		                          i, trueClassLabel, predictedClassLabel); 
+		        //System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", i, trueClassLabel, predictedClassLabel); 
 
 		        // Loop over all the prediction labels in the distribution.
 		        for (int predictionDistributionIndex = 0; 
@@ -170,12 +410,12 @@ public class MyFilteredLearner {
 		            double predictionProbability = 
 		                predictionDistribution[predictionDistributionIndex];
 
-		            System.out.printf("[%10s : %6.3f]", 
-		                              predictionDistributionIndexAsClassLabel, 
-		                              predictionProbability );
+//		            System.out.printf("[%10s : %6.3f]", 
+//		                              predictionDistributionIndexAsClassLabel, 
+//		                              predictionProbability );
 		        }
 
-		        System.out.println("\n");
+//		        System.out.println("\n");
 		    }
 			
 			
@@ -242,10 +482,11 @@ public class MyFilteredLearner {
 			learner.loadDataset(args[0]);
 			learner.loadTestDataset(args[1]);
 			
-			learner.loadCSVData("imdb_norm.csv");
+			learner.loadPositiveCSVData("imdb_pos.csv");
+			learner.loadNegativeCSVData("imdb_neg.csv");
 			// Evaluation must be done before training
 			// More info in: http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
-			learner.evaluate();
+			learner.evaluate();	      
 			learner.learn();
 			learner.saveModel(args[2]);
 		}
