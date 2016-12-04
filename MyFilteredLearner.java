@@ -76,6 +76,8 @@ public class MyFilteredLearner {
 	HashMap<Integer, Double> negativeFoundWordDC = new HashMap<Integer, Double>();
 	HashMap<Integer, Double> negativeFoundWordCC = new HashMap<Integer, Double>();
 	
+	Map<Integer, Double> distributionProb0 = new HashMap<Integer, Double>();
+	Map<Integer, Double> distributionProb1 = new HashMap<Integer, Double>();
 
 	/**
 	 * This method loads a dataset in ARFF format. If the file does not exist, or
@@ -231,6 +233,48 @@ public class MyFilteredLearner {
 		System.out.println("done!");
 	}
 
+	public void writeDistributedProb0ToCSV(Map<Integer, Double> distributionProb){
+		PrintWriter pw = null;
+		
+		try {
+		    pw = new PrintWriter(new File("distribution0prob.csv"));
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "ID, prob";
+		builder.append(ColumnNamesList +"\n");
+		
+		for (int i = 0 ; i < distributionProb.size(); i++){
+			builder.append(i + "," + distributionProb.get(i));
+			builder.append('\n');
+
+		}
+		pw.write(builder.toString());		
+		pw.close();		
+	}
+
+	public void writeDistributedProb1ToCSV(Map<Integer, Double> distributionProb){
+		PrintWriter pw = null;
+		
+		try {
+		    pw = new PrintWriter(new File("distribution1prob.csv"));
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "ID, prob";
+		builder.append(ColumnNamesList +"\n");
+		
+		for (int i = 0 ; i < distributionProb.size(); i++){
+			builder.append(i + "," + distributionProb.get(i));
+			builder.append('\n');
+
+		}
+		pw.write(builder.toString());		
+		pw.close();		
+	}
+	
 	public void writePositiveFoundWordsToText(Map<Integer, List<String>> positiveFoundWord) {
 		String pathToFile = "positiveFoundWords.txt";
 		try {
@@ -300,7 +344,7 @@ public class MyFilteredLearner {
 
 //				positiveFoundWord.clear();
 				String stringClass = testData.instance(i).toString(testData.classIndex() - 1);
-				System.out.println(stringClass);
+//				System.out.println(stringClass);
 				posFoundWords.clear();
 				if (positiveFoundWord.get(i) == null) {
 			    	positiveFoundWord.put(i, new ArrayList<String>());
@@ -311,8 +355,7 @@ public class MyFilteredLearner {
 				       Map.Entry mentry = (Map.Entry)posIterator.next();		
 				       searchResult = searchString(stringClass, mentry.getKey().toString());
 				       if (searchResult != ""){
-				    	   System.out.println("Search result is : " + searchResult);
-						   positiveFoundWord.get(i).add(searchResult);
+				    	   positiveFoundWord.get(i).add(searchResult);
 				    	   posFoundWords.add(searchResult);
 				       }
 				    }
@@ -362,13 +405,14 @@ public class MyFilteredLearner {
 //			System.out.println(negativeFoundWordBC);
 //			System.out.println(negativeFoundWordBC);
 			
-			System.out.println(positiveFoundWord);
+//			System.out.println(positiveFoundWord);
 			writePositiveFoundWordsToText(positiveFoundWord);
 			writeNegativeFoundWordsToText(negativeFoundWord);
-			System.out.println(negativeFoundWord);
+//			System.out.println(negativeFoundWord);
 			
 			writePosCentralityToCSV(positiveFoundWordBC, positiveFoundWordCC, positiveFoundWordDC);
 			writeNegCentralityToCSV(negativeFoundWordBC, negativeFoundWordCC, negativeFoundWordDC);
+			
 			
 			// String options[] = {"-v"};
 			Evaluation eval = new Evaluation(trainData);
@@ -397,8 +441,8 @@ public class MyFilteredLearner {
 		            classifier.distributionForInstance(testData.instance(i)); 
 
 		        // Print out the true label, predicted label, and the distribution.
-		        //System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", i, trueClassLabel, predictedClassLabel); 
-
+//		        System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", i, trueClassLabel, predictedClassLabel); 
+//		        System.out.printf("%5d;", i);
 		        // Loop over all the prediction labels in the distribution.
 		        for (int predictionDistributionIndex = 0; 
 		             predictionDistributionIndex < predictionDistribution.length; 
@@ -413,13 +457,21 @@ public class MyFilteredLearner {
 		            double predictionProbability = 
 		                predictionDistribution[predictionDistributionIndex];
 
-//		            System.out.printf("[%10s : %6.3f]", 
-//		                              predictionDistributionIndexAsClassLabel, 
-//		                              predictionProbability );
+//		            System.out.printf("[%10s : %6.3f]", predictionDistributionIndexAsClassLabel, predictionProbability );
+//		            System.out.printf("%6.3f;", predictionProbability);
+		            if (predictionDistributionIndexAsClassLabel.equals("0")) {
+		            	distributionProb0.put(i, predictionProbability);
+		            } else {
+		            	distributionProb1.put(i, predictionProbability);
+		            }
 		        }
 
 //		        System.out.println("\n");
 		    }
+		    writeDistributedProb0ToCSV(distributionProb0);
+		    writeDistributedProb1ToCSV(distributionProb1);
+//			System.out.println(distributionProb0);
+//			System.out.println(distributionProb1);
 			
 			
 			

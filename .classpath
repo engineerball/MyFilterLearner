@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="org/|org/apache/|org/apache/commons/|org/apache/commons/lang3/" kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/opt/weka-3-8-0/weka.jar"/>
-	<classpathentry kind="lib" path="/home/tk/code/MyFilterLearner/lib/commons-lang3-3.5.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="/opt/weka-3-8-0/weka.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/tk/code/MyFilterLearner/lib/commons-lang3-3.5.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
