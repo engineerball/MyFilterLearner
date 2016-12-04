@@ -166,10 +166,13 @@ public class MyFilteredLearner {
 	}
 
 	public String searchString(String classString, String word) {
-		String[] s1 = classString.split("[ .,;]+");
+		String[] s1 = classString.split("[ .,;'\"!]+");
+		String sLower;
 		String foundword = "";
 		for (String s : s1){
-			if (word.equalsIgnoreCase(s)) {				
+			sLower = s.toLowerCase();
+//			System.out.println(sLower);
+			if (word.equals(sLower)) {				
 				foundword = word;
 //				System.out.println("Found :" + foundword);
 			} 			
@@ -297,7 +300,7 @@ public class MyFilteredLearner {
 
 //				positiveFoundWord.clear();
 				String stringClass = testData.instance(i).toString(testData.classIndex() - 1);
-//				System.out.println(stringClass);
+				System.out.println(stringClass);
 				posFoundWords.clear();
 				if (positiveFoundWord.get(i) == null) {
 			    	positiveFoundWord.put(i, new ArrayList<String>());
@@ -308,7 +311,7 @@ public class MyFilteredLearner {
 				       Map.Entry mentry = (Map.Entry)posIterator.next();		
 				       searchResult = searchString(stringClass, mentry.getKey().toString());
 				       if (searchResult != ""){
-	//				       System.out.println("Search result is : " + searchResult);
+				    	   System.out.println("Search result is : " + searchResult);
 						   positiveFoundWord.get(i).add(searchResult);
 				    	   posFoundWords.add(searchResult);
 				       }
@@ -476,19 +479,19 @@ public class MyFilteredLearner {
 
 		MyFilteredLearner learner;
 		if (args.length < 2)
-			System.out.println("Usage: java MyLearner <fileTrainData> <fileTest> <fileModel>");
+			System.out.println("Usage: java MyLearner <fileTrainData> <fileTest>  <positive_wordlist.csv> <negative_wordlist.csv> <fileModel>");
 		else {
 			learner = new MyFilteredLearner();
 			learner.loadDataset(args[0]);
 			learner.loadTestDataset(args[1]);
 			
-			learner.loadPositiveCSVData("imdb_pos.csv");
-			learner.loadNegativeCSVData("imdb_neg.csv");
+			learner.loadPositiveCSVData(args[2]);
+			learner.loadNegativeCSVData(args[3]);
 			// Evaluation must be done before training
 			// More info in: http://weka.wikispaces.com/Use+WEKA+in+your+Java+code
 			learner.evaluate();	      
 			learner.learn();
-			learner.saveModel(args[2]);
+			learner.saveModel(args[4]);
 		}
 	}
 }
