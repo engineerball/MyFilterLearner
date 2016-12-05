@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -78,6 +79,8 @@ public class MyFilteredLearner {
 	HashMap<Integer, Double> negativeFoundWordDC = new HashMap<Integer, Double>();
 	HashMap<Integer, Double> negativeFoundWordCC = new HashMap<Integer, Double>();
 	
+	Map<Integer, String> classLabel = new HashMap<Integer, String>();
+	Map<Integer, String> predictedClass = new HashMap<Integer, String>();
 	Map<Integer, Double> distributionProb0 = new HashMap<Integer, Double>();
 	Map<Integer, Double> distributionProb1 = new HashMap<Integer, Double>();
 
@@ -317,6 +320,25 @@ public class MyFilteredLearner {
 
 	}
 	
+	public void writePredictedClassToCSV(Map<Integer, String> labelClass, Map<Integer, String> predictedClass) {
+		String pathToFile = "predictedClass.csv";
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(new File(pathToFile));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "ID,label,predicted";
+		builder.append(ColumnNamesList + "\n");
+		for (int i = 0; i < labelClass.size(); i++) {
+			builder.append(i + "," + labelClass.get(i) + "," + predictedClass.get(i));
+			builder.append('\n');
+		}
+		pw.write(builder.toString());
+		pw.close();
+	}
+	
 	/**
 	 * This method evaluates the classifier. As recommended by WEKA documentation,
 	 * the classifier is defined but not trained yet. Evaluation of previously
@@ -330,15 +352,16 @@ public class MyFilteredLearner {
 			filter = new StringToWordVector();
 			filter.setStemmer(new LovinsStemmer());
 			filter.setAttributeIndices("first");
+			System.out.println("Filter options : " + Arrays.toString(filter.getOptions()));
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
 			
 			RandomForest rf = new RandomForest();
-			rf.setSeed(4);
-			rf.setNumTrees(70);
+			rf.setSeed(2);
+			rf.setNumTrees(100);
 			rf.setMaxDepth(0);
 			rf.setNumFeatures(0);
-			System.out.println(rf.getNumTrees());
+			System.out.println("RandomForest options : " + Arrays.toString(rf.getOptions()));
 			
 			classifier.setClassifier(rf);
 			classifier.buildClassifier(trainData);
@@ -452,8 +475,12 @@ public class MyFilteredLearner {
 		            classifier.distributionForInstance(testData.instance(i)); 
 
 		        // Print out the true label, predicted label, and the distribution.
-//		        System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", i, trueClassLabel, predictedClassLabel); 
+		        System.out.printf("%5d: true=%-10s, predicted=%-10s, distribution=", i, trueClassLabel, predictedClassLabel); 
 //		        System.out.printf("%5d;", i);
+		        
+		        // Stored in HashMap
+		        classLabel.put(i, trueClassLabel.toString());
+		        predictedClass.put(i, predictedClassLabel.toString());
 		        // Loop over all the prediction labels in the distribution.
 		        for (int predictionDistributionIndex = 0; 
 		             predictionDistributionIndex < predictionDistribution.length; 
@@ -468,7 +495,7 @@ public class MyFilteredLearner {
 		            double predictionProbability = 
 		                predictionDistribution[predictionDistributionIndex];
 
-//		            System.out.printf("[%10s : %6.3f]", predictionDistributionIndexAsClassLabel, predictionProbability );
+		            System.out.printf("[%10s : %6.3f]", predictionDistributionIndexAsClassLabel, predictionProbability );
 //		            System.out.printf("%6.3f;", predictionProbability);
 		            if (predictionDistributionIndexAsClassLabel.equals("0")) {
 		            	distributionProb0.put(i, predictionProbability);
@@ -477,10 +504,11 @@ public class MyFilteredLearner {
 		            }
 		        }
 
-//		        System.out.println("\n");
+		        System.out.println("\n");
 		    }
 		    writeDistributedProb0ToCSV(distributionProb0);
 		    writeDistributedProb1ToCSV(distributionProb1);
+		    writePredictedClassToCSV(classLabel, predictedClass);
 //			System.out.println(distributionProb0);
 //			System.out.println(distributionProb1);
 			
