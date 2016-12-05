@@ -284,7 +284,7 @@ public class MyFilteredLearner {
 		String pathToFile = "positiveFoundWords.txt";
 		try {
 			FileWriter writer;
-			writer = new FileWriter(pathToFile, true);
+			writer = new FileWriter(pathToFile, false);
 			for (int i = 0; i < positiveFoundWord.size(); i++) {
 //				writer.write(i);;
 //				writer.write(" : ");
@@ -304,7 +304,7 @@ public class MyFilteredLearner {
 		String pathToFile = "negativeFoundWords.txt";
 		try {
 			FileWriter writer;
-			writer = new FileWriter(pathToFile, true);
+			writer = new FileWriter(pathToFile, false);
 			for (int i = 0; i < negativeFoundWord.size(); i++) {
 //				writer.write(i);;
 //				writer.write(" : ");
