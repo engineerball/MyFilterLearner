@@ -83,29 +83,29 @@ import java.io.*;
 	/**
 	 * This method creates the instance to be classified, from the text that has been read.
 	 */
-	public void makeInstance() {
-		// Create the attributes, class and text
-		FastVector fvNominalVal = new FastVector(2);
-		fvNominalVal.addElement("spam");
-		fvNominalVal.addElement("ham");
-		Attribute attribute1 = new Attribute("class", fvNominalVal);
-		Attribute attribute2 = new Attribute("text",(FastVector) null);
-		// Create list of instances with one element
-		FastVector fvWekaAttributes = new FastVector(2);
-		fvWekaAttributes.addElement(attribute1);
-		fvWekaAttributes.addElement(attribute2);
-		instances = new Instances("Test relation", fvWekaAttributes, 1);           
-		// Set class index
-		instances.setClassIndex(0);
-		// Create and add the instance
-		DenseInstance instance = new DenseInstance(2);
-		instance.setValue(attribute2, text);
-		// Another way to do it:
-		// instance.setValue((Attribute)fvWekaAttributes.elementAt(1), text);
-		instances.add(instance);
- 		System.out.println("===== Instance created with reference dataset =====");
-		System.out.println(instances);
-	}
+//	public void makeInstance() {
+//		// Create the attributes, class and text
+//		FastVector fvNominalVal = new FastVector(2);
+//		fvNominalVal.addElement("spam");
+//		fvNominalVal.addElement("ham");
+//		Attribute attribute1 = new Attribute("class", fvNominalVal);
+//		Attribute attribute2 = new Attribute("text",(FastVector) null);
+//		// Create list of instances with one element
+//		FastVector fvWekaAttributes = new FastVector(2);
+//		fvWekaAttributes.addElement(attribute1);
+//		fvWekaAttributes.addElement(attribute2);
+//		instances = new Instances("Test relation", fvWekaAttributes, 1);           
+//		// Set class index
+//		instances.setClassIndex(0);
+//		// Create and add the instance
+//		DenseInstance instance = new DenseInstance(2);
+//		instance.setValue(attribute2, text);
+//		// Another way to do it:
+//		// instance.setValue((Attribute)fvWekaAttributes.elementAt(1), text);
+//		instances.add(instance);
+// 		System.out.println("===== Instance created with reference dataset =====");
+//		System.out.println(instances);
+//	}
 	
 	/**
 	 * This method performs the classification of the instance.
@@ -135,7 +135,7 @@ import java.io.*;
 			classifier = new MyFilteredClassifier();
 			classifier.load(args[0]);
 			classifier.loadModel(args[1]);
-			classifier.makeInstance();
+//			classifier.makeInstance();
 			classifier.classify();
 		}
 	}

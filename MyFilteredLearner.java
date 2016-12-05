@@ -22,6 +22,8 @@ import weka.classifiers.trees.RandomForest;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.core.converters.ArffLoader.ArffReader;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.stemmers.LovinsStemmer;
+
 import java.io.*;
 import org.apache.commons.lang3.*;
 import java.util.HashMap;
@@ -326,10 +328,19 @@ public class MyFilteredLearner {
 			testData.setClassIndex(testData.numAttributes() - 1);
 			// trainData.setClassIndex(trainData.numAttributes() - 1);
 			filter = new StringToWordVector();
+			filter.setStemmer(new LovinsStemmer());
 			filter.setAttributeIndices("first");
 			classifier = new FilteredClassifier();
 			classifier.setFilter(filter);
-			classifier.setClassifier(new RandomForest());
+			
+			RandomForest rf = new RandomForest();
+			rf.setSeed(4);
+			rf.setNumTrees(70);
+			rf.setMaxDepth(0);
+			rf.setNumFeatures(0);
+			System.out.println(rf.getNumTrees());
+			
+			classifier.setClassifier(rf);
 			classifier.buildClassifier(trainData);
 //			System.out.println(testData);
 			
