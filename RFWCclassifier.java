@@ -1,17 +1,3 @@
-/**
- * A Java class that implements a simple text learner, based on WEKA.
- * To be used with MyFilteredClassifier.java.
- * WEKA is available at: http://www.cs.waikato.ac.nz/ml/weka/
- * Copyright (C) 2013 Jose Maria Gomez Hidalgo - http://www.esp.uem.es/jmgomez
- *
- * This program is free software: you can redistribute it and/or modify
- * it for any purpose.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
-
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToWordVector;
@@ -40,9 +26,8 @@ import java.io.PrintWriter;
  * This class implements a simple text learner in Java using WEKA.
  * It loads a text dataset written in ARFF format, evaluates a classifier on it,
  * and saves the learnt model for further use.
- * @author Jose Maria Gomez Hidalgo - http://www.esp.uem.es/jmgomez
- * @see MyFilteredClassifier
  */
+
 public class RFWCclassifier {
 
 	/**
@@ -83,7 +68,10 @@ public class RFWCclassifier {
 	Map<Integer, String> predictedClass = new HashMap<Integer, String>();
 	Map<Integer, Double> distributionProb0 = new HashMap<Integer, Double>();
 	Map<Integer, Double> distributionProb1 = new HashMap<Integer, Double>();
-
+	
+	Map<Integer, Double> summationValueClass0 = new HashMap<Integer, Double>();
+	Map<Integer, Double> summationValueClass1 = new HashMap<Integer, Double>();
+	
 	/**
 	 * This method loads a dataset in ARFF format. If the file does not exist, or
 	 * it has a wrong format, the attribute trainData is null.
@@ -339,6 +327,51 @@ public class RFWCclassifier {
 		pw.close();
 	}
 	
+	
+	public void makeCentralityClass0Summarization(Map<Integer, Double> distributionProb, HashMap<Integer, Double> BC, HashMap<Integer, Double> CC, HashMap<Integer, Double> DC) {
+		Double result = 0.0;
+		for (int i = 0; i < distributionProb.size(); i++) { 
+			result = distributionProb.get(i) + BC.get(i) + CC.get(i) + DC.get(i);
+			summationValueClass0.put(i, result);			
+			System.out.println(distributionProb.get(i) + "+" + BC.get(i) + "+" + CC.get(i) + "+" + DC.get(i) + "=" + result);
+		}
+			
+	}
+	
+	public void makeCentralityClass1Summarization(Map<Integer, Double> distributionProb, HashMap<Integer, Double> BC, HashMap<Integer, Double> CC, HashMap<Integer, Double> DC) {
+		Double result = 0.0;
+		for (int i = 0; i < distributionProb.size(); i++) { 
+			result = distributionProb.get(i) + BC.get(i) + CC.get(i) + DC.get(i);
+			summationValueClass1.put(i, result);			
+			System.out.println(distributionProb.get(i) + "+" + BC.get(i) + "+" + CC.get(i) + "+" + DC.get(i) + "=" + result);
+		}
+			
+	}
+	
+	public void compareSummationValueClass(Map<Integer, Double> class0, Map<Integer, Double> class1) {
+		String pathToFile = "compareSumValueClass.csv";
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(new File(pathToFile));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		StringBuilder builder = new StringBuilder();
+		String ColumnNamesList = "ID, class,sumvalue";
+		builder.append(ColumnNamesList + "\n");
+		for (int i = 0; i < class0.size(); i++) {
+			if (class0.get(i) > class1.get(i)) {
+				builder.append(i + "," + "0" + "," + class0.get(i));
+				builder.append('\n');
+			} else {
+				builder.append(i + "," + "1" + "," + class1.get(i));
+				builder.append('\n');
+			}			
+		}
+		pw.write(builder.toString());
+		pw.close();
+	}
+	
 	/**
 	 * This method evaluates the classifier. As recommended by WEKA documentation,
 	 * the classifier is defined but not trained yet. Evaluation of previously
@@ -512,7 +545,15 @@ public class RFWCclassifier {
 //			System.out.println(distributionProb0);
 //			System.out.println(distributionProb1);
 			
-			
+		    makeCentralityClass0Summarization(distributionProb0, negativeFoundWordBC, negativeFoundWordCC,negativeFoundWordDC);
+		    makeCentralityClass1Summarization(distributionProb1, positiveFoundWordBC, positiveFoundWordCC,positiveFoundWordDC);
+		    
+		    System.out.println("========== Class 0 ===========");
+		    System.out.println(summationValueClass0);
+		    
+		    System.out.println("========== Class 1 ===========");		    
+		    System.out.println(summationValueClass1);
+		    compareSummationValueClass(summationValueClass0,summationValueClass1);
 			
 			System.out.println(eval.toSummaryString("\nResults\n======\n", false));
 			System.out.println(eval.toClassDetailsString());
@@ -569,8 +610,8 @@ public class RFWCclassifier {
 	public static void main (String[] args) {
 
 		RFWCclassifier learner;
-		if (args.length < 2)
-			System.out.println("Usage: java RFWClassifier <fileTrainData> <fileTest>  <positive_wordlist.csv> <negative_wordlist.csv> <fileModel>");
+		if (args.length < 4)
+			System.out.println("Usage: java RFWCclassifier <fileTrainData> <fileTest>  <positive_wordlist.csv> <negative_wordlist.csv> <fileModel>");
 		else {
 			learner = new RFWCclassifier();
 			learner.loadDataset(args[0]);
